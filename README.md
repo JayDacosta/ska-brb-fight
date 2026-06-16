@@ -154,3 +154,56 @@ But for this version, Twitch chat is already connected directly.
 This MVP stores match state inside the OBS overlay page. If the overlay reloads, the match resets.
 
 It does not persist coins to a database yet. For real long-term loyalty/reward points, add a free database such as Supabase, Neon, or Turso later, or bridge payout results into Lumia.
+
+
+## OBS scene-switch control
+
+Use this URL in the OBS Browser Source:
+
+```text
+https://YOUR-RENDER-URL.onrender.com/overlay?key=YOUR_OVERLAY_KEY&autostart=1
+```
+
+Turn these Browser Source options ON:
+
+```text
+Refresh browser when scene becomes active
+Shutdown source when not visible
+```
+
+With those enabled, switching to the BRB scene reloads the overlay and automatically starts the 3, 2, 1, FIGHT countdown. Switching away unloads it.
+
+Use `autostart=0` if you want the overlay to wait for a mod/Ska to type `!startfight`.
+
+## Twitch chat controls
+
+Viewer commands:
+
+```text
+!fight
+!strike
+!jump
+!dash
+!block
+!weapon
+!special
+!taunt
+```
+
+Broadcaster/mod/control-user commands:
+
+```text
+!startfight
+!brbfight
+!endfight
+!stopfight
+!resetfight
+```
+
+Optional Render environment variable:
+
+```text
+CONTROL_USERS=skavstheworld,jayldacosta
+```
+
+If `CONTROL_USERS` is not set, the Twitch channel name is allowed by default. Broadcaster and moderators are always allowed to use control commands.

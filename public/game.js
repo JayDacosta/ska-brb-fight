@@ -8,6 +8,7 @@
 
   const query = new URLSearchParams(location.search);
   const overlayKey = query.get('key') || '';
+  const autoStart = query.get('autostart') !== '0';
   const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
   const wsUrl = `${wsProtocol}//${location.host}/ws${overlayKey ? `?key=${encodeURIComponent(overlayKey)}` : ''}`;
 
@@ -70,7 +71,7 @@
     ws.addEventListener('open', () => {
       updateConnection(true, 'Overlay online');
       ws.send(JSON.stringify({ type: 'overlay-ready' }));
-      if (state.mode === 'idle') startCountdown();
+      if (state.mode === 'idle' && autoStart) startCountdown();
     });
 
     ws.addEventListener('message', event => {
@@ -170,13 +171,13 @@
     state.mode = 'idle';
     state.winnerSnapshot = [];
     showCenter('Ska stepped away...', 'Type !fight to enter.', 'BRB BATTLE');
-    setTimeout(() => startCountdown(true), 1000);
+    if (autoStart) setTimeout(() => startCountdown(true), 1000);
   }
 
   function processCommand({ username, displayName, command, color }) {
     if (!username) return;
     if (state.mode === 'results') return;
-    if (state.mode === 'idle') startCountdown();
+    if (state.mode === 'idle' && autoStart) startCountdown();
 
     let player = state.players.get(username.toLowerCase());
 

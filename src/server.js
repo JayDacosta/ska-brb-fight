@@ -14,6 +14,13 @@ const PORT = Number(process.env.PORT || 3000);
 const TWITCH_CHANNEL = cleanChannel(process.env.TWITCH_CHANNEL || 'skavstheworld');
 const ADMIN_KEY = process.env.ADMIN_KEY || '';
 const OVERLAY_KEY = process.env.OVERLAY_KEY || '';
+const CONTROL_USERS = new Set(
+  String(process.env.CONTROL_USERS || TWITCH_CHANNEL)
+    .split(',')
+    .map(name => safeName(name).toLowerCase())
+    .filter(Boolean)
+);
+
 
 const settings = {
   channel: TWITCH_CHANNEL,
@@ -33,8 +40,15 @@ const COMMANDS = new Set([
   '!block',
   '!weapon',
   '!taunt',
-  '!special'
+  '!special',
+  '!startfight',
+  '!brbfight',
+  '!endfight',
+  '!stopfight',
+  '!resetfight'
 ]);
+
+const CONTROL_COMMANDS = new Set(['start', 'end', 'reset']);
 
 const ALIASES = new Map([
   ['!join', 'fight'],
@@ -46,7 +60,12 @@ const ALIASES = new Map([
   ['!block', 'block'],
   ['!weapon', 'weapon'],
   ['!taunt', 'taunt'],
-  ['!special', 'special']
+  ['!special', 'special'],
+  ['!startfight', 'start'],
+  ['!brbfight', 'start'],
+  ['!endfight', 'end'],
+  ['!stopfight', 'end'],
+  ['!resetfight', 'reset']
 ]);
 
 const app = express();
@@ -71,7 +90,7 @@ app.get('/admin', (_req, res) => {
 });
 
 app.get('/healthz', (_req, res) => {
-  res.json({ ok: true, channel: TWITCH_CHANNEL, twitchConnected: twitchClient.connected });
+  res.json({ ok: true, channel: TWITCH_CHANNEL, twitchConnected: twitchClient.connected, controlUsers: [...CONTROL_USERS] });
 });
 
 app.get('/api/settings', (req, res) => {
@@ -235,6 +254,12 @@ class TwitchIrcClient {
     if (!COMMANDS.has(commandToken)) return;
 
     const command = ALIASES.get(commandToken);
+
+    if (CONTROL_COMMANDS.has(command) && !canControlFight(parsed)) {
+      console.log(`[twitch] ignored ${commandToken} from ${parsed.username}; not a broadcaster/mod/control user`);
+      return;
+    }
+
     broadcast({
       type: 'command',
       source: 'twitch',
@@ -269,12 +294,31 @@ function parsePrivmsg(line) {
   const username = match[1];
   const message = match[2];
 
+  const badges = parseBadges(tags.badges || '');
+
   return {
     username,
     message,
     displayName: tags['display-name'] || username,
-    color: tags.color || null
+    color: tags.color || null,
+    badges,
+    isBroadcaster: badges.has('broadcaster') || username.toLowerCase() === TWITCH_CHANNEL,
+    isMod: badges.has('moderator') || tags.mod === '1'
   };
+}
+
+function parseBadges(value) {
+  const badges = new Set();
+  for (const part of String(value || '').split(',')) {
+    const [name] = part.split('/');
+    if (name) badges.add(name);
+  }
+  return badges;
+}
+
+function canControlFight(parsed) {
+  const username = safeName(parsed.username).toLowerCase();
+  return parsed.isBroadcaster || parsed.isMod || CONTROL_USERS.has(username);
 }
 
 function decodeIrcTag(value) {
