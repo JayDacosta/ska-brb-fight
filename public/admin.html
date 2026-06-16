@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ska BRB Fight Admin</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="admin-body">
+  <main class="admin-panel">
+    <div class="admin-header">
+      <p class="eyebrow">Ska BRB Fight</p>
+      <h1>Admin / Test Panel</h1>
+      <p>This page lets you test the overlay before Twitch chat gets involved.</p>
+    </div>
+
+    <label class="field">
+      Admin key
+      <input id="adminKey" type="password" placeholder="ADMIN_KEY from your host">
+    </label>
+
+    <label class="field">
+      Test username
+      <input id="username" value="Nerd" maxlength="25">
+    </label>
+
+    <div class="button-grid">
+      <button data-command="start">Start Match</button>
+      <button data-command="fight">!fight</button>
+      <button data-command="strike">!strike</button>
+      <button data-command="jump">!jump</button>
+      <button data-command="dash">!dash</button>
+      <button data-command="block">!block</button>
+      <button data-command="weapon">!weapon</button>
+      <button data-command="special">!special</button>
+      <button data-command="taunt">!taunt</button>
+      <button data-command="end">End Match</button>
+      <button data-command="reset">Reset</button>
+    </div>
+
+    <pre id="log" class="admin-log">Ready.</pre>
+
+    <div class="admin-help">
+      <h2>OBS URL</h2>
+      <code id="obsUrl"></code>
+      <p>Open the overlay in another tab while testing this admin page.</p>
+    </div>
+  </main>
+
+  <script>
+    const log = document.getElementById('log');
+    const keyInput = document.getElementById('adminKey');
+    const userInput = document.getElementById('username');
+    const savedKey = localStorage.getItem('skaFightAdminKey') || '';
+    keyInput.value = savedKey;
+    document.getElementById('obsUrl').textContent = `${location.origin}/overlay`;
+
+    function write(message) {
+      log.textContent = `${new Date().toLocaleTimeString()} ${message}\n` + log.textContent;
+    }
+
+    document.querySelectorAll('button[data-command]').forEach(button => {
+      button.addEventListener('click', async () => {
+        const key = keyInput.value.trim();
+        localStorage.setItem('skaFightAdminKey', key);
+        const command = button.dataset.command;
+        const username = userInput.value.trim() || 'Tester';
+        try {
+          const res = await fetch('/api/command', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-admin-key': key },
+            body: JSON.stringify({ username, command })
+          });
+          const data = await res.json();
+          write(`${command}: ${JSON.stringify(data)}`);
+        } catch (err) {
+          write(`Error: ${err.message}`);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

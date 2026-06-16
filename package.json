@@ -1,0 +1,28 @@
+{
+  "name": "ska-brb-fight",
+  "version": "1.0.0",
+  "description": "A Twitch chat controlled BRB fighting overlay for OBS.",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "keywords": [
+    "twitch",
+    "obs",
+    "overlay",
+    "chat-game",
+    "ska"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "ws": "^8.18.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

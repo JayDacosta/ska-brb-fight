@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ska BRB Fight</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="overlay-body">
+  <main id="app" class="game-shell">
+    <canvas id="game" width="1920" height="1080" aria-label="Ska BRB chat fighting game"></canvas>
+
+    <section class="hud hud-top">
+      <div class="brand-lockup">
+        <span class="eyebrow">BRB BATTLE</span>
+        <h1>SKA VS CHAT</h1>
+      </div>
+      <div class="status-card">
+        <span id="connectionDot" class="dot"></span>
+        <span id="connectionText">Connecting</span>
+      </div>
+    </section>
+
+    <section class="hud hud-bottom">
+      <div class="command-card">
+        <span>Join: <strong>!fight</strong></span>
+        <span>Hit: <strong>!strike</strong></span>
+        <span>Dodge: <strong>!jump</strong></span>
+        <span>Chaos: <strong>!weapon</strong></span>
+      </div>
+      <ol id="leaderboard" class="leaderboard"></ol>
+    </section>
+
+    <section id="centerMessage" class="center-message show">
+      <p class="kicker">Ska stepped away...</p>
+      <h2>Chat, choose violence.</h2>
+      <p>Type <strong>!fight</strong> to enter.</p>
+    </section>
+  </main>
+
+  <script src="/game.js"></script>
+</body>
+</html>
